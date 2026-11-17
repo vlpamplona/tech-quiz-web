@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090B1A">
+  <title>Tech Translation Quiz</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A4%96%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+    <span class="glyph g1">&lt;/&gt;</span><span class="glyph g2">{ }</span>
+    <span class="glyph g3">01</span><span class="glyph g4">SQL</span>
+    <span class="glyph g5">&gt;_</span><span class="glyph g6">API</span>
+  </div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <!-- HOME -->
+  <main id="screen-home" class="screen active">
+    <span class="badge"><i class="dot"></i> Modo desafio</span>
+    <h1 class="title"><span>TECH</span><span class="grad">TRANSLATION QUIZ</span></h1>
+    <p class="subtitle">Teste seus conhecimentos em tecnologia: traduza termos de DevOps, bancos de dados, segurança, IA e mais para o inglês — contra o relógio.</p>
+    <div class="info-grid">
+      <div class="glass info"><b>{{ total_questions }}</b><small>Perguntas</small></div>
+      <div class="glass info"><b>{{ question_time }}s</b><small>Por pergunta</small></div>
+      <div class="glass info"><b>{{ total_terms }}+</b><small>Termos no banco</small></div>
+    </div>
+    <button id="btn-start" class="btn-main" type="button">▶ COMEÇAR DESAFIO</button>
+    <p class="hint">⏱ Jogo com tempo limitado: responda antes de o relógio zerar!</p>
+  </main>
+
+  <!-- QUIZ -->
+  <main id="screen-quiz" class="screen">
+    <header class="glass hud">
+      <div class="hud-row">
+        <div class="hud-box"><small>Pergunta</small><b id="hud-count">01/15</b></div>
+        <div class="hud-box score-box">
+          <small>Pontos</small><b id="hud-score">0</b>
+          <span id="gain" class="gain">+100</span>
+        </div>
+        <div class="hud-right">
+          <button id="btn-voice" class="icon-btn" type="button" aria-pressed="false" title="Pronúncia automática da resposta">🔇</button>
+          <div id="timer" class="timer" role="timer">
+            <svg viewBox="0 0 56 56"><circle class="track" cx="28" cy="28" r="24"/><circle id="timer-ring" class="ring" cx="28" cy="28" r="24"/></svg>
+            <span id="timer-num">20</span>
+          </div>
+        </div>
+      </div>
+      <div class="bar"><div id="bar-fill" class="bar-fill"></div></div>
+    </header>
+
+    <section id="question-area">
+      <div class="center"><span id="q-cat" class="chip"></span></div>
+      <p class="ask">Como se diz em inglês…</p>
+      <h2 id="q-prompt" class="q-prompt"></h2>
+      <div id="options" class="options"></div>
+      <div id="feedback" class="feedback" role="status"></div>
+    </section>
+  </main>
+
+  <!-- RESULTADOS -->
+  <main id="screen-results" class="screen">
+    <p class="kicker">🏆 Desafio concluído</p>
+    <h1 id="r-title" class="r-title grad"></h1>
+    <div class="ring-wrap">
+      <svg viewBox="0 0 200 200">
+        <defs>
+          <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#22D3EE"/><stop offset="50%" stop-color="#8B5CF6"/><stop offset="100%" stop-color="#EC4899"/>
+          </linearGradient>
+          <linearGradient id="rgold" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#FACC15"/><stop offset="50%" stop-color="#EC4899"/><stop offset="100%" stop-color="#8B5CF6"/>
+          </linearGradient>
+        </defs>
+        <circle class="r-track" cx="100" cy="100" r="90"/>
+        <circle id="r-ring" class="r-ring" cx="100" cy="100" r="90"/>
+      </svg>
+      <div class="ring-center"><small>Pontuação final</small><b id="r-score">0</b><small id="r-max"></small></div>
+    </div>
+    <div class="stats">
+      <div class="glass stat"><b id="r-hits" class="ok">0</b><small>Acertos</small></div>
+      <div class="glass stat"><b id="r-miss" class="bad">0</b><small>Erros</small></div>
+      <div class="glass stat"><b id="r-pct">0%</b><small>Aproveitamento</small></div>
+      <div class="glass stat"><b id="r-time">00:00</b><small>Tempo total</small></div>
+    </div>
+    <div class="btn-row">
+      <button id="btn-again" class="btn-main" type="button">↻ JOGAR NOVAMENTE</button>
+      <button id="btn-home" class="btn-ghost" type="button">⌂ VOLTAR AO INÍCIO</button>
+    </div>
+  </main>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

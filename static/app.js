@@ -126,7 +126,7 @@
 
     $('hud-count').textContent = `${pad(q.number)}/${pad(q.total)}`;
     $('bar-fill').style.width = `${((q.number - 1) / q.total) * 100}%`;
-    $('q-cat').textContent = q.category;
+    $('q-cat').textContent = `Tema: ${q.category}`;
     $('q-prompt').textContent = q.prompt;
     $('feedback').replaceChildren();
 

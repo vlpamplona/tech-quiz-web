@@ -15,6 +15,8 @@
   let timerId = null;     // UM único intervalo; sempre limpo antes de criar outro
   let advanceId = null;   // timeout do avanço automático
   let locked = true;      // bloqueia cliques duplicados / respostas fora de hora
+  let answered = false;   // indica se a pergunta atual já foi respondida
+  let advancing = false;  // evita avanços simultâneos
   let epoch = 0;          // invalida respostas de rede de perguntas/partidas antigas
   let autoSpeak = false;
   let shownScore = 0;
@@ -98,11 +100,18 @@
     clearInterval(timerId);
     const myEpoch = epoch;
     timerId = setInterval(() => {
-      if (myEpoch !== epoch || locked) return clearInterval(timerId);
+      if (myEpoch !== epoch) return clearInterval(timerId);
       timeLeft -= 1;
       renderTimer();
       anim($('timer-num'), [{ transform: 'translateY(-6px)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 200 });
-      if (timeLeft <= 0) submit(null); // tempo esgotado = incorreta
+      if (timeLeft <= 0) {
+        clearInterval(timerId);
+        if (!answered) {
+          submit(null); // tempo esgotado sem resposta
+        } else {
+          advance(myEpoch); // tempo esgotado após ter respondido
+        }
+      }
     }, 1000);
   }
 
@@ -111,6 +120,8 @@
     question = q;
     epoch += 1;
     locked = false;
+    answered = false;
+    advancing = false;
     timeLeft = q.time;
 
     $('hud-count').textContent = `${pad(q.number)}/${pad(q.total)}`;
@@ -143,9 +154,9 @@
   }
 
   async function submit(option) {
-    if (locked) return; // bloqueia resposta duplicada / após o tempo
+    if (locked || answered) return; // bloqueia resposta duplicada / após o tempo
     locked = true;
-    clearInterval(timerId);
+    answered = true;
     const myEpoch = epoch;
     document.querySelectorAll('.opt').forEach((b) => (b.disabled = true));
     try {
@@ -174,7 +185,6 @@
 
     setScore(r.score, r.gained);
     $('bar-fill').style.width = `${(question.number / question.total) * 100}%`;
-    $('timer').classList.remove('urgent', 'warn');
 
     const pick = (arr) => arr[(question.number - 1) % arr.length];
     const fb = document.createElement('div');
@@ -188,24 +198,41 @@
     sub.append(strong);
     left.append(msg, sub);
     fb.append(left);
+
+    const actions = document.createElement('div');
+    actions.className = 'fb-actions';
+
     if (canSpeak) {
       const sp = document.createElement('button');
       sp.type = 'button'; sp.className = 'speak'; sp.textContent = '🔊 Ouvir pronúncia';
       sp.addEventListener('click', () => speak(r.answer));
-      fb.append(sp);
+      actions.append(sp);
     }
+
+    const nextBtn = document.createElement('button');
+    nextBtn.type = 'button';
+    nextBtn.className = 'btn-next';
+    nextBtn.textContent = 'Próxima ➔';
+    const myEpoch = epoch;
+    nextBtn.addEventListener('click', () => {
+      nextBtn.disabled = true;
+      clearInterval(timerId);
+      advance(myEpoch);
+    });
+    actions.append(nextBtn);
+
+    fb.append(actions);
     $('feedback').replaceChildren(fb);
     anim(fb, [{ opacity: 0, transform: 'translateY(14px) scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: 300 });
     if (autoSpeak) speak(r.answer);
-
-    // avanço automático após ~1,5 s
-    const myEpoch = epoch;
-    clearTimeout(advanceId);
-    advanceId = setTimeout(() => advance(myEpoch), FEEDBACK_DELAY);
   }
 
   async function advance(myEpoch) {
-    if (myEpoch !== epoch) return;
+    if (myEpoch !== epoch || advancing) return;
+    advancing = true;
+    clearInterval(timerId);
+    clearTimeout(advanceId);
+    if (canSpeak) speechSynthesis.cancel();
     try {
       const r = await api('/api/next', { game: gameId });
       if (myEpoch !== epoch) return;
@@ -216,6 +243,8 @@
       renderQuestion(r.question);
     } catch (e) {
       console.error(e);
+    } finally {
+      advancing = false;
     }
   }
 
@@ -284,7 +313,7 @@
   async function startGame() {
     if (starting) return;
     starting = true;
-    stopTimers(); stopConfetti(); epoch += 1; locked = true;
+    stopTimers(); stopConfetti(); epoch += 1; locked = true; answered = false; advancing = false;
     if (canSpeak) speechSynthesis.cancel();
     try {
       const r = await api('/api/start');
@@ -301,7 +330,7 @@
   }
 
   function goHome() {
-    stopTimers(); stopConfetti(); epoch += 1; locked = true; gameId = null;
+    stopTimers(); stopConfetti(); epoch += 1; locked = true; answered = false; advancing = false; gameId = null;
     if (canSpeak) speechSynthesis.cancel();
     showScreen('home');
   }

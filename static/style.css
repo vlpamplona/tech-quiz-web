@@ -109,6 +109,11 @@ button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
 .fb .sub { font-size: .9rem; color: rgba(232,234,255,.7); }
 .speak { padding: 9px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.1); font-weight: 600; font-size: .9rem; transition: transform .15s; }
 .speak:hover { transform: scale(1.06); } .speak:active { transform: scale(.93); }
+.fb-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.btn-next { padding: 9px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,.2); background: linear-gradient(90deg, var(--violet), var(--blue)); color: #fff; font-family: var(--display); font-weight: 700; font-size: .9rem; letter-spacing: .03em; transition: transform .15s, box-shadow .15s; }
+.btn-next:hover { transform: scale(1.06); box-shadow: 0 0 16px -2px var(--cyan); }
+.btn-next:active { transform: scale(.94); }
+.btn-next:disabled { opacity: .5; pointer-events: none; }
 
 /* Resultados */
 .kicker { text-transform: uppercase; letter-spacing: .3em; font-weight: 600; font-size: .85rem; color: rgba(232,234,255,.6); margin: 0; }
